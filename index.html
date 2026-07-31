@@ -94,7 +94,7 @@
     /* STATS GRID */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 15px;
       margin-bottom: 25px;
     }
@@ -244,6 +244,10 @@
         <div class="label">Santri (P)</div>
         <div class="value" id="stat-total-p">0</div>
       </div>
+      <div class="stat-card">
+        <div class="label">Total Santri</div>
+        <div class="value" id="stat-total-santri">0</div>
+      </div>
       <div class="stat-card blue">
         <div class="label">Guru (L)</div>
         <div class="value" id="stat-guru-l">0</div>
@@ -252,9 +256,9 @@
         <div class="label">Guru (P)</div>
         <div class="value" id="stat-guru-p">0</div>
       </div>
-      <div class="stat-card">
-        <div class="label">Total Santri</div>
-        <div class="value" id="stat-total-santri">0</div>
+      <div class="stat-card blue">
+        <div class="label">Total Guru</div>
+        <div class="value" id="stat-total-guru">0</div>
       </div>
     </div>
 
@@ -354,54 +358,70 @@
       }
     }
 
-    // PROSES PEMBACAAN DATA SANTRI & GURU DARI SPREADSHEET
+    // PROSES PEMBACAAN DATA SESUAI INDEKS KOLOM A-Q
     function processDataWithGuru(rows) {
       if (rows.length < 2) return;
 
-      const headers = rows[0];
-      let colSantriL = -1;
-      let colSantriP = -1;
-      let colGuruL = -1;
-      let colGuruP = -1;
-
-      // Cari otomatis indeks kolom Santri dan Guru dari Header CSV
-      headers.forEach((h, idx) => {
-        const text = h.toLowerCase();
-        if (text.includes('guru')) {
-          if (text.includes('l') || text.includes('pria') || text.includes('laki')) colGuruL = idx;
-          if (text.includes('p') || text.includes('wanita') || text.includes('perempuan')) colGuruP = idx;
-        } else if (text.includes('santri') || text.includes('siswa') || text.includes('murid')) {
-          if (text.includes('l') || text.includes('pria') || text.includes('laki')) colSantriL = idx;
-          if (text.includes('p') || text.includes('wanita') || text.includes('perempuan')) colSantriP = idx;
-        }
-      });
+      /* 
+        PETA KOLOM:
+        Kolom L = Index 11 (Santri L)
+        Kolom M = Index 12 (Santri P)
+        Kolom N = Index 13 (Total Santri L+P)
+        Kolom O = Index 14 (Guru L)
+        Kolom P = Index 15 (Guru P)
+        Kolom Q = Index 16 (Total Guru L+P)
+      */
+      const COL_SANTRI_L = 11;
+      const COL_SANTRI_P = 12;
+      const COL_TOTAL_SANTRI = 13;
+      const COL_GURU_L = 14;
+      const COL_GURU_P = 15;
+      const COL_TOTAL_GURU = 16;
 
       let totalSantriL = 0;
       let totalSantriP = 0;
+      let totalSantriLP = 0;
       let totalGuruL = 0;
       let totalGuruP = 0;
+      let totalGuruLP = 0;
       let totalLembaga = 0;
 
-      const isLastRowTotal = rows[rows.length - 1].some(c => c.toLowerCase().includes('total') || c.toLowerCase().includes('jumlah'));
-      const endIndex = rows.length - (isLastRowTotal ? 1 : 0);
+      const lastRow = rows[rows.length - 1];
+      const isLastRowTotal = lastRow.some(c => c.toLowerCase().includes('total') || c.toLowerCase().includes('jumlah'));
 
-      for (let i = 1; i < endIndex; i++) {
-        const row = rows[i];
-        totalLembaga++;
+      // Jika baris terakhir di spreadsheet adalah ringkasan/total, ambil nilainya langsung
+      if (isLastRowTotal) {
+        totalSantriL = parseNum(lastRow[COL_SANTRI_L]);
+        totalSantriP = parseNum(lastRow[COL_SANTRI_P]);
+        totalSantriLP = parseNum(lastRow[COL_TOTAL_SANTRI]) || (totalSantriL + totalSantriP);
+        totalGuruL = parseNum(lastRow[COL_GURU_L]);
+        totalGuruP = parseNum(lastRow[COL_GURU_P]);
+        totalGuruLP = parseNum(lastRow[COL_TOTAL_GURU]) || (totalGuruL + totalGuruP);
+        totalLembaga = rows.length - 2;
+      } else {
+        // Jika belum ada baris total, jumlahkan dari seluruh baris
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          totalLembaga++;
 
-        if (colSantriL !== -1) totalSantriL += parseNum(row[colSantriL]);
-        if (colSantriP !== -1) totalSantriP += parseNum(row[colSantriP]);
-        if (colGuruL !== -1) totalGuruL += parseNum(row[colGuruL]);
-        if (colGuruP !== -1) totalGuruP += parseNum(row[colGuruP]);
+          totalSantriL += parseNum(row[COL_SANTRI_L]);
+          totalSantriP += parseNum(row[COL_SANTRI_P]);
+          totalSantriLP += parseNum(row[COL_TOTAL_SANTRI]) || (parseNum(row[COL_SANTRI_L]) + parseNum(row[COL_SANTRI_P]));
+          
+          totalGuruL += parseNum(row[COL_GURU_L]);
+          totalGuruP += parseNum(row[COL_GURU_P]);
+          totalGuruLP += parseNum(row[COL_TOTAL_GURU]) || (parseNum(row[COL_GURU_L]) + parseNum(row[COL_GURU_P]));
+        }
       }
 
-      // Tampilkan ke Kartu Ringkasan
+      // Tampilkan ke Ringkasan Kartu
       document.getElementById('stat-total-tpq').innerText = totalLembaga.toLocaleString('id-ID');
       document.getElementById('stat-total-l').innerText = totalSantriL.toLocaleString('id-ID');
       document.getElementById('stat-total-p').innerText = totalSantriP.toLocaleString('id-ID');
+      document.getElementById('stat-total-santri').innerText = totalSantriLP.toLocaleString('id-ID');
       document.getElementById('stat-guru-l').innerText = totalGuruL.toLocaleString('id-ID');
       document.getElementById('stat-guru-p').innerText = totalGuruP.toLocaleString('id-ID');
-      document.getElementById('stat-total-santri').innerText = (totalSantriL + totalSantriP).toLocaleString('id-ID');
+      document.getElementById('stat-total-guru').innerText = totalGuruLP.toLocaleString('id-ID');
     }
 
     function parseNum(val) {
