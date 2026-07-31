@@ -93,14 +93,14 @@
 
     .dashboard-layout {
       display: grid;
-      grid-template-columns: 280px 1fr; /* Kolom Kiri: Kartu Ringkasan, Kolom Kanan: Tabel */
+      grid-template-columns: 260px minmax(0, 1fr); /* minmax(0, 1fr) sangat penting agar scrollbar aktif di CSS Grid */
       gap: 20px;
       align-items: start;
     }
 
     @media (max-width: 992px) {
       .dashboard-layout {
-        grid-template-columns: 1fr; /* Responsif: Tumpuk vertical pada layar HP/Tablet */
+        grid-template-columns: 1fr;
       }
     }
 
@@ -131,6 +131,7 @@
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      min-width: 0; /* Mengatasi bug overflow CSS Grid */
     }
 
     .card-header {
@@ -187,14 +188,41 @@
       color: var(--text-sub);
     }
 
-    /* TABLE */
+    /* TABLE SCROLLABLE FIX */
     .table-responsive {
-      overflow-x: auto;
+      width: 100%;
+      overflow-x: auto !important; /* Memaksa izin scroll menyamping */
+      -webkit-overflow-scrolling: touch; /* Scroll halus di mobile */
       border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: block;
+      margin-bottom: 5px;
     }
 
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; }
+    /* Custom Styling Scrollbar */
+    .table-responsive::-webkit-scrollbar {
+      height: 8px;
+    }
+    .table-responsive::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+      background: rgba(0, 255, 163, 0.3);
+      border-radius: 10px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-color);
+    }
+
+    table { 
+      width: 100%; 
+      min-width: 900px; /* Lebar minimal agar kolom tidak berhimpitan dan bisa di-scroll */
+      border-collapse: collapse; 
+      font-size: 0.85rem; 
+      text-align: center; 
+    }
+
     th {
       background: rgba(0, 255, 163, 0.08);
       color: var(--accent-color);
@@ -202,7 +230,14 @@
       font-weight: 600;
       white-space: nowrap;
     }
-    td { padding: 10px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #d1d5db; }
+
+    td { 
+      padding: 10px 14px; 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03); 
+      color: #d1d5db; 
+      white-space: nowrap; /* Mencegah teks terpotong menjadi 2 baris pendek */
+    }
+
     tr:hover td { background: rgba(255, 255, 255, 0.03); }
     .text-left { text-align: left; }
     .total-row td { background: rgba(0, 255, 163, 0.06) !important; font-weight: 700; color: var(--accent-color) !important; }
@@ -263,8 +298,9 @@
       .dashboard-layout { display: block !important; }
       .stats-sidebar { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; margin-bottom: 20px !important; }
       .glass-card { border: none !important; box-shadow: none !important; background: transparent !important; }
+      table { min-width: 100% !important; }
       th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #ccc !important; }
-      td { color: #000 !important; border: 1px solid #ccc !important; }
+      td { color: #000 !important; border: 1px solid #ccc !important; white-space: normal !important; }
       .total-row td { background: #e6e6e6 !important; color: #000 !important; }
       .card-title { color: #000 !important; font-size: 1.5rem; text-align: center; }
     }
