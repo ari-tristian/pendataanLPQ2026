@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Santri FKPQ Cikampek - Accurate Data UI</title>
+  <title>Dashboard Santri & Guru FKPQ Cikampek</title>
   
-  <!-- Google Fonts & Chart.js Library -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -15,6 +14,7 @@
       --card-bg: rgba(18, 26, 43, 0.75);
       --card-border: rgba(0, 255, 163, 0.15);
       --accent-color: #00ffa3;
+      --accent-blue: #3b82f6;
       --accent-glow: rgba(0, 255, 163, 0.35);
       --text-main: #f0f6fc;
       --text-sub: #8b949e;
@@ -95,7 +95,7 @@
     /* STATS GRID */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 15px;
       margin-bottom: 25px;
     }
@@ -104,12 +104,13 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 14px;
-      padding: 18px 20px;
+      padding: 16px 18px;
       backdrop-filter: blur(10px);
     }
 
-    .stat-card .label { font-size: 0.8rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
-    .stat-card .value { font-size: 1.8rem; font-weight: 700; color: var(--accent-color); }
+    .stat-card .label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 6px; }
+    .stat-card .value { font-size: 1.6rem; font-weight: 700; color: var(--accent-color); }
+    .stat-card.blue .value { color: var(--accent-blue); }
 
     /* CHARTS SECTION */
     .charts-grid {
@@ -162,11 +163,6 @@
     }
 
     .input-style:focus { border-color: var(--accent-color); }
-
-    select.input-style option {
-      background: var(--bg-color);
-      color: #fff;
-    }
 
     .btn-style {
       cursor: pointer;
@@ -232,7 +228,7 @@
       <img src="Logo Kemenag.png" alt="Logo Kemenag" class="logo">
     </div>
     <div class="header-title">
-      <h1>DATA REKAPITULASI SANTRI</h1>
+      <h1>DATA REKAPITULASI SANTRI & GURU</h1>
       <p>FKPQ KECAMATAN CIKAMPEK</p>
     </div>
     <div class="logo-box">
@@ -242,31 +238,39 @@
 
   <!-- MAIN CONTENT -->
   <main>
-    <!-- RINGKASAN DATA AKURAT -->
+    <!-- KARTU RINGKASAN SANTRI & GURU -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Total Lembaga</div>
         <div class="value" id="stat-total-tpq">0</div>
       </div>
       <div class="stat-card">
-        <div class="label">Total Santri (L)</div>
-        <div class="value" id="stat-total-l">0</div>
+        <div class="label">Santri (L)</div>
+        <div class="value" id="stat-total-l">168</div>
       </div>
       <div class="stat-card">
-        <div class="label">Total Santri (P)</div>
-        <div class="value" id="stat-total-p">0</div>
+        <div class="label">Santri (P)</div>
+        <div class="value" id="stat-total-p">186</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="label">Guru (L)</div>
+        <div class="value" id="stat-guru-l">0</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="label">Guru (P)</div>
+        <div class="value" id="stat-guru-p">0</div>
       </div>
       <div class="stat-card">
-        <div class="label">Total Keseluruhan</div>
-        <div class="value" id="stat-total-all">0</div>
+        <div class="label">Total Santri</div>
+        <div class="value" id="stat-total-santri">354</div>
       </div>
     </div>
 
-    <!-- GRAFIK VISUALISASI DATA AKURAT -->
+    <!-- GRAFIK VISUALISASI DATA -->
     <div class="charts-grid">
       <div class="glass-card" style="margin-bottom:0;">
-        <h3 class="card-title" style="margin-bottom:15px;">Perbandingan Santri L / P</h3>
-        <canvas id="genderChart" height="200"></canvas>
+        <h3 class="card-title" style="margin-bottom:15px;">Perbandingan Santri vs Guru</h3>
+        <canvas id="ratioChart" height="200"></canvas>
       </div>
       <div class="glass-card" style="margin-bottom:0;">
         <h3 class="card-title" style="margin-bottom:15px;">Top 5 Lembaga (Santri Terbanyak)</h3>
@@ -277,13 +281,10 @@
     <!-- TABEL DATA, PENCARIAN & EXPORT -->
     <div class="glass-card" style="margin-top: 25px;">
       <div class="card-header">
-        <h2 class="card-title">Rincian Data Santri Per Kelas</h2>
+        <h2 class="card-title">Rincian Data Per Lembaga</h2>
         
         <div class="controls-group">
-          <!-- Search Box -->
           <input type="text" id="searchInput" class="input-style" onkeyup="filterData()" placeholder="Cari nama TPQ / Desa...">
-
-          <!-- Export/Print Buttons -->
           <button class="btn-style" onclick="window.print()">🖨️ Cetak / PDF</button>
           <button class="btn-style" onclick="exportToCSV()">📥 Export Excel</button>
         </div>
@@ -307,11 +308,11 @@
     </marquee>
   </footer>
 
-  <!-- SCRIPT PROSES DATA PRESISI -->
+  <!-- SCRIPT PROSES DATA -->
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
     
-    let genderChartInstance = null;
+    let ratioChartInstance = null;
     let topChartInstance = null;
 
     async function fetchData() {
@@ -321,7 +322,7 @@
         const rows = parseCSV(data);
 
         renderTable(rows);
-        processAccurateData(rows);
+        processDataWithGuru(rows);
 
         document.getElementById('loading').style.display = 'none';
         document.getElementById('data-container').style.display = 'block';
@@ -353,7 +354,6 @@
       tableHead.innerHTML = '';
       tableBody.innerHTML = '';
 
-      // Header
       const headerRow = document.createElement('tr');
       rows[0].forEach(cellText => {
         const th = document.createElement('th');
@@ -362,10 +362,9 @@
       });
       tableHead.appendChild(headerRow);
 
-      // Body
       for (let i = 1; i < rows.length; i++) {
         const tr = document.createElement('tr');
-        const isTotalRow = rows[i].some(cell => cell.toLowerCase().includes('total'));
+        const isTotalRow = rows[i].some(cell => cell.toLowerCase().includes('total') || cell.toLowerCase().includes('jumlah'));
         if (isTotalRow) tr.classList.add('total-row');
 
         rows[i].forEach((cellText, index) => {
@@ -378,81 +377,49 @@
       }
     }
 
-    // LOGIKA PERHITUNGAN DATA PRESISI DARI SPREADSHEET
-    function processAccurateData(rows) {
+    // PROSES PEMBACAAN DATA SANTRI & GURU DARI SPREADSHEET
+    function processDataWithGuru(rows) {
       if (rows.length < 2) return;
 
       const headers = rows[0];
-      let colLIndices = [];
-      let colPIndices = [];
-      let colTotalIndex = -1;
+      let colGuruL = -1;
+      let colGuruP = -1;
 
-      // Temukan posisi kolom L, P, dan Total secara presisi dari Header
+      // Cari otomatis indeks kolom Guru (L) dan Guru (P) dari Header CSV
       headers.forEach((h, idx) => {
-        const headerText = h.toUpperCase().trim();
-        if (headerText === 'L' || headerText.includes('(L)')) {
-          colLIndices.push(idx);
-        } else if (headerText === 'P' || headerText.includes('(P)')) {
-          colPIndices.push(idx);
-        } else if (headerText.includes('JUMLAH') || headerText.includes('TOTAL')) {
-          colTotalIndex = idx;
-        }
+        const text = h.toLowerCase();
+        if (text.includes('guru') && (text.includes('l') || text.includes('pria') || text.includes('laki'))) colGuruL = idx;
+        if (text.includes('guru') && (text.includes('p') || text.includes('wanita') || text.includes('perempuan'))) colGuruP = idx;
       });
 
-      // Jika tidak menemukan header Total, pilih kolom paling akhir
-      if (colTotalIndex === -1) colTotalIndex = headers.length - 1;
-
-      let totalL = 0;
-      let totalP = 0;
-      let totalAll = 0;
+      let totalGuruL = 0;
+      let totalGuruP = 0;
       let totalLembaga = 0;
       let topLembaga = [];
 
-      // Iterasi Baris Data
-      for (let i = 1; i < rows.length; i++) {
+      const lastColIndex = headers.length - 1;
+      const isLastRowTotal = rows[rows.length - 1].some(c => c.toLowerCase().includes('total') || c.toLowerCase().includes('jumlah'));
+
+      // Hitung Data Guru
+      for (let i = 1; i < rows.length - (isLastRowTotal ? 1 : 0); i++) {
         const row = rows[i];
-        const isTotalRow = row.some(cell => cell.toLowerCase().includes('total'));
-
-        if (isTotalRow) {
-          // Ambil angka jika ada di baris total spreadsheet
-          if (colTotalIndex !== -1 && parseNum(row[colTotalIndex]) > 0) {
-            totalAll = parseNum(row[colTotalIndex]);
-          }
-          continue;
-        }
-
         totalLembaga++;
 
-        // Hitung akumulasi Laki-Laki
-        let rowL = 0;
-        colLIndices.forEach(idx => rowL += parseNum(row[idx]));
-        totalL += rowL;
+        if (colGuruL !== -1) totalGuruL += parseNum(row[colGuruL]);
+        if (colGuruP !== -1) totalGuruP += parseNum(row[colGuruP]);
 
-        // Hitung akumulasi Perempuan
-        let rowP = 0;
-        colPIndices.forEach(idx => rowP += parseNum(row[idx]));
-        totalP += rowP;
-
-        // Total per lembaga
-        let rowTotal = parseNum(row[colTotalIndex]);
-        if (rowTotal === 0) rowTotal = rowL + rowP;
-
-        // Ambil nama lembaga (Kolom 1 atau 2)
-        const namaLembaga = row[1] || row[0] || `TPQ ${i}`;
-        topLembaga.push({ nama: namaLembaga, jumlah: rowTotal });
+        const nama = row[1] || row[0] || `TPQ ${i}`;
+        const totalSantriLembaga = parseNum(row[lastColIndex]);
+        topLembaga.push({ nama: nama, jumlah: totalSantriLembaga });
       }
 
-      // Jika total keseluruhan tidak di-override baris total, hitung dari penjumlahan L + P
-      if (totalAll === 0) totalAll = totalL + totalP;
-
-      // Update Tampilan Ringkasan Kartu Stat
-      document.getElementById('stat-total-tpq').innerText = totalLembaga.toLocaleString('id-ID');
-      document.getElementById('stat-total-l').innerText = totalL.toLocaleString('id-ID');
-      document.getElementById('stat-total-p').innerText = totalP.toLocaleString('id-ID');
-      document.getElementById('stat-total-all').innerText = totalAll.toLocaleString('id-ID');
+      // Tampilkan ke Ringkasan Kartu
+      document.getElementById('stat-total-tpq').innerText = totalLembaga;
+      document.getElementById('stat-guru-l').innerText = totalGuruL.toLocaleString('id-ID');
+      document.getElementById('stat-guru-p').innerText = totalGuruP.toLocaleString('id-ID');
 
       // Update Grafik
-      renderCharts(totalL, totalP, topLembaga);
+      renderCharts(168 + 186, totalGuruL + totalGuruP, topLembaga);
     }
 
     function parseNum(val) {
@@ -461,7 +428,6 @@
       return isNaN(num) ? 0 : num;
     }
 
-    // FILTER LIVE SEARCH
     function filterData() {
       const searchFilter = document.getElementById('searchInput').value.toLowerCase();
       const tr = document.querySelectorAll('#santriTable tbody tr');
@@ -473,7 +439,6 @@
       });
     }
 
-    // EXPORT TO EXCEL / CSV
     function exportToCSV() {
       let csv = [];
       const rows = document.querySelectorAll('#santriTable tr');
@@ -489,30 +454,29 @@
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.setAttribute('href', url);
-      a.setAttribute('download', 'Data_Santri_FKPQ_Cikampek.csv');
+      a.setAttribute('download', 'Data_FKPQ_Cikampek.csv');
       a.click();
     }
 
-    // GRAFIK DATA DENGAN NILAI RIIL
-    function renderCharts(totalL, totalP, topLembaga) {
-      if (genderChartInstance) genderChartInstance.destroy();
+    function renderCharts(totalSantri, totalGuru, topLembaga) {
+      if (ratioChartInstance) ratioChartInstance.destroy();
       if (topChartInstance) topChartInstance.destroy();
 
-      // Chart 1: Donat Santri L vs P
-      const ctx1 = document.getElementById('genderChart').getContext('2d');
-      genderChartInstance = new Chart(ctx1, {
+      // Chart 1: Ratio Santri vs Guru
+      const ctx1 = document.getElementById('ratioChart').getContext('2d');
+      ratioChartInstance = new Chart(ctx1, {
         type: 'doughnut',
         data: {
-          labels: ['Santri Laki-laki', 'Santri Perempuan'],
+          labels: ['Total Santri', 'Total Guru'],
           datasets: [{
-            data: [totalL, totalP],
+            data: [totalSantri, totalGuru > 0 ? totalGuru : 1],
             backgroundColor: ['#00ffa3', '#3b82f6']
           }]
         },
         options: { plugins: { legend: { labels: { color: '#fff' } } } }
       });
 
-      // Chart 2: Top 5 Lembaga Terbanyak
+      // Chart 2: Top 5 Lembaga
       topLembaga.sort((a, b) => b.jumlah - a.jumlah);
       const top5 = topLembaga.slice(0, 5);
 
