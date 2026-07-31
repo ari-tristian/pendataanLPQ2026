@@ -164,9 +164,16 @@
       font-weight: 600;
     }
 
-    .btn-style:hover {
+    .btn-style:hover:not(:disabled) {
       background: var(--accent-color);
       color: #000;
+    }
+
+    .btn-style:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text-sub);
     }
 
     /* TABLE */
@@ -189,6 +196,43 @@
     .text-left { text-align: left; }
     .total-row td { background: rgba(0, 255, 163, 0.06) !important; font-weight: 700; color: var(--accent-color) !important; }
 
+    /* PAGINATION STYLES */
+    .pagination-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      gap: 15px;
+    }
+
+    .pagination-info {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .pagination-buttons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .page-btn {
+      min-width: 35px;
+      height: 35px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    .page-btn.active {
+      background: var(--accent-color);
+      color: #000;
+      font-weight: 700;
+    }
+
     /* FOOTER */
     footer {
       background: rgba(11, 15, 25, 0.95);
@@ -203,7 +247,7 @@
     /* PRINT STYLES */
     @media print {
       body { background: #fff !important; color: #000 !important; }
-      header, footer, .controls-group { display: none !important; }
+      header, footer, .controls-group, .pagination-container { display: none !important; }
       .glass-card { border: none !important; box-shadow: none !important; background: transparent !important; }
       th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #ccc !important; }
       td { color: #000 !important; border: 1px solid #ccc !important; }
@@ -276,11 +320,19 @@
 
       <div id="loading" style="text-align:center; padding: 30px;">Memuat Data dari Spreadsheet...</div>
       
-      <div class="table-responsive" id="data-container" style="display: none;">
-        <table id="santriTable">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
+      <div id="data-container" style="display: none;">
+        <div class="table-responsive">
+          <table id="santriTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- PAGINASI CONTROLS -->
+        <div class="pagination-container">
+          <div class="pagination-info" id="paginationInfo">Menampilkan 0 - 0 dari 0 data</div>
+          <div class="pagination-buttons" id="paginationButtons"></div>
+        </div>
       </div>
     </div>
   </main>
@@ -296,13 +348,21 @@
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
 
+    // PAGINASI VARIABLES
+    let rawHeaders = [];
+    let allDataRows = [];
+    let filteredDataRows = [];
+    let totalRowData = null;
+    let currentPage = 1;
+    const rowsPerPage = 10;
+
     async function fetchData() {
       try {
         const response = await fetch(csvUrl);
         const data = await response.text();
         const rows = parseCSV(data);
 
-        renderTable(rows);
+        prepareData(rows);
         processDataWithGuru(rows);
 
         document.getElementById('loading').style.display = 'none';
@@ -328,27 +388,69 @@
       }).filter(row => row.length > 1 || row[0] !== '');
     }
 
-    function renderTable(rows) {
+    function prepareData(rows) {
       if (rows.length === 0) return;
+      rawHeaders = rows[0];
+      
+      const bodyRows = rows.slice(1);
+      allDataRows = [];
+      totalRowData = null;
+
+      bodyRows.forEach(row => {
+        const isTotal = row.some(cell => cell.toLowerCase().includes('total') || cell.toLowerCase().includes('jumlah'));
+        if (isTotal) {
+          totalRowData = row;
+        } else {
+          allDataRows.push(row);
+        }
+      });
+
+      filteredDataRows = [...allDataRows];
+      currentPage = 1;
+      renderTable();
+    }
+
+    function renderTable() {
       const tableHead = document.querySelector('#santriTable thead');
       const tableBody = document.querySelector('#santriTable tbody');
       tableHead.innerHTML = '';
       tableBody.innerHTML = '';
 
+      // Render Header
       const headerRow = document.createElement('tr');
-      rows[0].forEach(cellText => {
+      rawHeaders.forEach(cellText => {
         const th = document.createElement('th');
         th.textContent = cellText;
         headerRow.appendChild(th);
       });
       tableHead.appendChild(headerRow);
 
-      for (let i = 1; i < rows.length; i++) {
-        const tr = document.createElement('tr');
-        const isTotalRow = rows[i].some(cell => cell.toLowerCase().includes('total') || cell.toLowerCase().includes('jumlah'));
-        if (isTotalRow) tr.classList.add('total-row');
+      // Hitung Paginasi
+      const totalItems = filteredDataRows.length;
+      const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
 
-        rows[i].forEach((cellText, index) => {
+      const startIndex = (currentPage - 1) * rowsPerPage;
+      const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
+      const pageData = filteredDataRows.slice(startIndex, endIndex);
+
+      // Render Baris Halaman Saat Ini
+      pageData.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach((cellText, index) => {
+          const td = document.createElement('td');
+          td.textContent = cellText;
+          if (index === 0 || index === 1) td.classList.add('text-left');
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      });
+
+      // Render Baris TOTAL jika ada
+      if (totalRowData) {
+        const tr = document.createElement('tr');
+        tr.classList.add('total-row');
+        totalRowData.forEach((cellText, index) => {
           const td = document.createElement('td');
           td.textContent = cellText;
           if (index === 0 || index === 1) td.classList.add('text-left');
@@ -356,21 +458,56 @@
         });
         tableBody.appendChild(tr);
       }
+
+      renderPaginationControls(startIndex, endIndex, totalItems, totalPages);
     }
 
-    // PROSES PEMBACAAN DATA SESUAI INDEKS KOLOM A-Q
+    function renderPaginationControls(start, end, total, totalPages) {
+      const infoText = total === 0 ? 'Menampilkan 0 data' : `Menampilkan ${start + 1} - ${end} dari ${total} lembaga`;
+      document.getElementById('paginationInfo').innerText = infoText;
+
+      const container = document.getElementById('paginationButtons');
+      container.innerHTML = '';
+
+      if (total === 0) return;
+
+      // Tombol Prev
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'btn-style page-btn';
+      prevBtn.innerText = '‹';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => { currentPage--; renderTable(); };
+      container.appendChild(prevBtn);
+
+      // Tombol Nomor Halaman
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `btn-style page-btn ${i === currentPage ? 'active' : ''}`;
+          pageBtn.innerText = i;
+          pageBtn.onclick = () => { currentPage = i; renderTable(); };
+          container.appendChild(pageBtn);
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          const dots = document.createElement('span');
+          dots.innerText = '...';
+          dots.style.color = 'var(--text-sub)';
+          dots.style.padding = '0 4px';
+          container.appendChild(dots);
+        }
+      }
+
+      // Tombol Next
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn-style page-btn';
+      nextBtn.innerText = '›';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => { currentPage++; renderTable(); };
+      container.appendChild(nextBtn);
+    }
+
     function processDataWithGuru(rows) {
       if (rows.length < 2) return;
 
-      /* 
-        PETA KOLOM:
-        Kolom L = Index 11 (Santri L)
-        Kolom M = Index 12 (Santri P)
-        Kolom N = Index 13 (Total Santri L+P)
-        Kolom O = Index 14 (Guru L)
-        Kolom P = Index 15 (Guru P)
-        Kolom Q = Index 16 (Total Guru L+P)
-      */
       const COL_SANTRI_L = 11;
       const COL_SANTRI_P = 12;
       const COL_TOTAL_SANTRI = 13;
@@ -389,7 +526,6 @@
       const lastRow = rows[rows.length - 1];
       const isLastRowTotal = lastRow.some(c => c.toLowerCase().includes('total') || c.toLowerCase().includes('jumlah'));
 
-      // Jika baris terakhir di spreadsheet adalah ringkasan/total, ambil nilainya langsung
       if (isLastRowTotal) {
         totalSantriL = parseNum(lastRow[COL_SANTRI_L]);
         totalSantriP = parseNum(lastRow[COL_SANTRI_P]);
@@ -399,7 +535,6 @@
         totalGuruLP = parseNum(lastRow[COL_TOTAL_GURU]) || (totalGuruL + totalGuruP);
         totalLembaga = rows.length - 2;
       } else {
-        // Jika belum ada baris total, jumlahkan dari seluruh baris
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           totalLembaga++;
@@ -414,7 +549,6 @@
         }
       }
 
-      // Tampilkan ke Ringkasan Kartu
       document.getElementById('stat-total-tpq').innerText = totalLembaga.toLocaleString('id-ID');
       document.getElementById('stat-total-l').innerText = totalSantriL.toLocaleString('id-ID');
       document.getElementById('stat-total-p').innerText = totalSantriP.toLocaleString('id-ID');
@@ -432,25 +566,25 @@
 
     function filterData() {
       const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-      const tr = document.querySelectorAll('#santriTable tbody tr');
-
-      tr.forEach(row => {
-        if (row.classList.contains('total-row')) return;
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(searchFilter) ? '' : 'none';
+      filteredDataRows = allDataRows.filter(row => {
+        return row.some(cell => cell.toLowerCase().includes(searchFilter));
       });
+
+      currentPage = 1; // Reset ke halaman pertama saat mencari
+      renderTable();
     }
 
     function exportToCSV() {
       let csv = [];
-      const rows = document.querySelectorAll('#santriTable tr');
-      rows.forEach(row => {
-        if (row.style.display !== 'none') {
-          const cols = row.querySelectorAll('td, th');
-          const rowData = Array.from(cols).map(c => `"${c.innerText}"`).join(',');
-          csv.push(rowData);
-        }
+      csv.push(rawHeaders.map(c => `"${c}"`).join(','));
+
+      allDataRows.forEach(row => {
+        csv.push(row.map(c => `"${c}"`).join(','));
       });
+
+      if (totalRowData) {
+        csv.push(totalRowData.map(c => `"${c}"`).join(','));
+      }
 
       const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
