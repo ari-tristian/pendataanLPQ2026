@@ -215,6 +215,7 @@
       display: flex;
       gap: 5px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .page-btn {
@@ -354,7 +355,7 @@
     let filteredDataRows = [];
     let totalRowData = null;
     let currentPage = 1;
-    const rowsPerPage = 10;
+    const rowsPerPage = 5; // DIUBAH MENJADI 5 BARIS PER HALAMAN
 
     async function fetchData() {
       try {
@@ -434,7 +435,7 @@
       const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
       const pageData = filteredDataRows.slice(startIndex, endIndex);
 
-      // Render Baris Halaman Saat Ini
+      // Render Baris Halaman Saat Ini (5 baris)
       pageData.forEach(row => {
         const tr = document.createElement('tr');
         row.forEach((cellText, index) => {
@@ -570,7 +571,7 @@
         return row.some(cell => cell.toLowerCase().includes(searchFilter));
       });
 
-      currentPage = 1; // Reset ke halaman pertama saat mencari
+      currentPage = 1;
       renderTable();
     }
 
