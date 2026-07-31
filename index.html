@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Data Santri FKPQ Cikampek</title>
-  
-  <!-- PASTIKAN TAG <style> DIBUKA DI SINI -->
   <style>
     * {
       box-sizing: border-box;
@@ -62,7 +60,7 @@
       opacity: 0.9;
     }
 
-    /* Container Main */
+    /* Main Container */
     main {
       flex: 1;
       padding: 20px;
@@ -143,8 +141,7 @@
       background-color: #111;
       color: #fff;
       padding: 10px 0;
-      position: sticky;
-      bottom: 0;
+      margin-top: auto;
       width: 100%;
       box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
     }
@@ -156,6 +153,133 @@
       color: #ffeb3b;
     }
   </style>
-  <!-- PASTIKAN TAG </style> DITUTUP DI SINI SEBELUM </head> -->
-
 </head>
+<body>
+
+  <!-- HEADER DENGAN LOGO KEMENAG & FKPQ -->
+  <header>
+    <div class="logo-container">
+      <!-- Logo Kemenag -->
+      <img src="Logo Kemenag.png" alt="Logo Kemenag" class="logo">
+    </div>
+
+    <div class="header-title">
+      <h1>DATA REKAPITULASI SANTRI</h1>
+      <p>FKPQ KECAMATAN CIKAMPEK</p>
+    </div>
+
+    <div class="logo-container">
+      <!-- Logo FKPQ Cikampek -->
+      <img src="Logo FKPQ Cikampek.jpg" alt="Logo FKPQ Cikampek" class="logo">
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="card">
+      <h2 class="card-title">Data Rincian Santri Per Kelas (L/P)</h2>
+      <div id="loading">Memuat data dari Google Sheet...</div>
+      
+      <div class="table-responsive" id="data-container" style="display: none;">
+        <table id="santriTable">
+          <thead>
+            <!-- Header tabel dinamis -->
+          </thead>
+          <tbody>
+            <!-- Data baris dinamis -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER RUNNING TEXT -->
+  <footer>
+    <marquee behavior="scroll" direction="left" scrollamount="6">
+      Forum Komunikasi Pendidikan Al-Qur'an (FKPQ) Kecamatan Cikampek - Sekretariat : Kp. Pawarengan Desa Dawuan Tengah Kec. Cikampek - Karawang
+    </marquee>
+  </footer>
+
+  <!-- SCRIPT INTEGRASI GOOGLE SHEET CSV -->
+  <script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
+
+    async function fetchData() {
+      try {
+        const response = await fetch(csvUrl);
+        const data = await response.text();
+        
+        const rows = parseCSV(data);
+        renderTable(rows);
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('data-container').style.display = 'block';
+      } catch (error) {
+        console.error('Gagal mengambil data:', error);
+        document.getElementById('loading').innerText = 'Gagal memuat data. Pastikan jaringan terhubung dan publikasi Google Sheet aktif.';
+      }
+    }
+
+    // Parser CSV untuk membaca format baris dan koma
+    function parseCSV(text) {
+      const lines = text.split('\n');
+      return lines.map(line => {
+        const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*)/g;
+        const row = [];
+        let matches;
+        while ((matches = regex.exec(line)) !== null) {
+          if (matches[0].startsWith(',')) matches[1] = matches[1];
+          let val = matches[1] ? matches[1].replace(/^"|"$/g, '').trim() : '';
+          row.push(val);
+        }
+        return row;
+      }).filter(row => row.length > 1 || row[0] !== '');
+    }
+
+    // Render Data CSV ke Tabel HTML
+    function renderTable(rows) {
+      if (rows.length === 0) return;
+
+      const tableHead = document.querySelector('#santriTable thead');
+      const tableBody = document.querySelector('#santriTable tbody');
+
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      // Set Header Tabel
+      const headerRow = document.createElement('tr');
+      rows[0].forEach(cellText => {
+        const th = document.createElement('th');
+        th.textContent = cellText;
+        headerRow.appendChild(th);
+      });
+      tableHead.appendChild(headerRow);
+
+      // Set Baris Data
+      for (let i = 1; i < rows.length; i++) {
+        const tr = document.createElement('tr');
+        
+        // Cek baris 'Total' untuk highlight khusus
+        if (rows[i][0] && rows[i][0].toLowerCase().includes('total')) {
+          tr.classList.add('total-row');
+        }
+
+        rows[i].forEach((cellText, index) => {
+          const td = document.createElement('td');
+          td.textContent = cellText;
+          
+          // Kolom teks (misal Nama Lembaga) dibuat rata kiri
+          if (index === 0 || index === 1) {
+            td.classList.add('text-left');
+          }
+          
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchData);
+  </script>
+</body>
+</html>
