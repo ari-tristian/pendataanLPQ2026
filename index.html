@@ -3,163 +3,245 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Data Santri FKPQ Cikampek</title>
+  <title>Dashboard Santri FKPQ Cikampek - Futuristic UI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(18, 26, 43, 0.75);
+      --card-border: rgba(0, 255, 163, 0.15);
+      --accent-color: #00ffa3;
+      --accent-glow: rgba(0, 255, 163, 0.35);
+      --text-main: #f0f6fc;
+      --text-sub: #8b949e;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     body {
-      background-color: #f4f7f6;
+      background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(0, 255, 163, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(13, 92, 58, 0.15) 0px, transparent 50%);
+      color: var(--text-main);
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* Header & Logo */
+    /* HEADER FUTURISTIK */
     header {
-      background: linear-gradient(135deg, #0d5c3a, #138d55);
-      color: white;
-      padding: 15px 30px;
+      background: rgba(11, 15, 25, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 18px 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    .logo-container {
+    .logo-box {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .logo-box:hover {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 15px var(--accent-glow);
     }
 
     .logo {
-      height: 70px;
+      height: 60px;
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
     }
 
     .header-title {
       text-align: center;
-      flex-grow: 1;
-      padding: 0 15px;
     }
 
     .header-title h1 {
-      font-size: 1.4rem;
-      margin-bottom: 5px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
     .header-title p {
-      font-size: 0.9rem;
-      opacity: 0.9;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      letter-spacing: 2px;
+      margin-top: 4px;
+      font-weight: 600;
     }
 
-    /* Main Container */
+    /* MAIN CONTAINER */
     main {
       flex: 1;
-      padding: 20px;
-      max-width: 1200px;
+      padding: 30px 20px;
+      max-width: 1280px;
       margin: 0 auto;
       width: 100%;
     }
 
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      margin-bottom: 25px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 15px;
       margin-bottom: 20px;
     }
 
     .card-title {
-      color: #0d5c3a;
-      border-bottom: 2px solid #138d55;
-      padding-bottom: 10px;
-      margin-bottom: 15px;
       font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    /* Table Styling */
+    .card-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-color);
+    }
+
+    /* TABEL MODERN */
     .table-responsive {
       overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
       font-size: 0.9rem;
-    }
-
-    th, td {
-      border: 1px solid #e0e0e0;
-      padding: 10px 12px;
       text-align: center;
     }
 
     th {
-      background-color: #138d55;
-      color: white;
+      background: rgba(0, 255, 163, 0.08);
+      color: var(--accent-color);
+      padding: 14px 16px;
       font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid var(--card-border);
       white-space: nowrap;
     }
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: #d1d5db;
     }
 
-    tr:hover {
-      background-color: #f1f1f1;
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+      color: #ffffff;
     }
 
     .text-left {
       text-align: left;
     }
 
-    .total-row {
-      background-color: #e8f5e9 !important;
-      font-weight: bold;
-      color: #0d5c3a;
+    .total-row td {
+      background: rgba(0, 255, 163, 0.05) !important;
+      font-weight: 700;
+      color: var(--accent-color) !important;
+      border-top: 1px solid var(--card-border);
     }
 
-    /* Loading State */
+    /* LOADING ANIMATION */
     #loading {
       text-align: center;
-      padding: 40px;
-      font-size: 1.1rem;
-      color: #666;
+      padding: 50px;
+      color: var(--text-sub);
+      font-size: 1rem;
     }
 
-    /* Footer Running Text */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0, 255, 163, 0.1);
+      border-top: 3px solid var(--accent-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* FOOTER RUNNING TEXT */
     footer {
-      background-color: #111;
-      color: #fff;
-      padding: 10px 0;
+      background: rgba(11, 15, 25, 0.95);
+      border-top: 1px solid var(--card-border);
+      padding: 12px 0;
       margin-top: auto;
-      width: 100%;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
     }
 
     marquee {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 500;
+      color: #e2e8f0;
       letter-spacing: 0.5px;
-      color: #ffeb3b;
+    }
+
+    marquee span {
+      color: var(--accent-color);
+      margin: 0 10px;
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER DENGAN LOGO KEMENAG & FKPQ -->
+  <!-- HEADER -->
   <header>
-    <div class="logo-container">
-      <!-- Logo Kemenag -->
+    <div class="logo-box">
       <img src="Logo Kemenag.png" alt="Logo Kemenag" class="logo">
     </div>
 
@@ -168,39 +250,41 @@
       <p>FKPQ KECAMATAN CIKAMPEK</p>
     </div>
 
-    <div class="logo-container">
-      <!-- Logo FKPQ Cikampek -->
-      <img src="Logo FKPQ Cikampek.jpg" alt="Logo FKPQ Cikampek" class="logo">
+    <div class="logo-box">
+      <!-- Logo FKPQ disesuaikan menjadi format .png -->
+      <img src="Logo FKPQ Cikampek.png" alt="Logo FKPQ Cikampek" class="logo">
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN DATA CONTAINER -->
   <main>
-    <div class="card">
-      <h2 class="card-title">Data Rincian Santri Per Kelas (L/P)</h2>
-      <div id="loading">Memuat data dari Google Sheet...</div>
+    <div class="glass-card">
+      <div class="card-header">
+        <h2 class="card-title">Rincian Data Santri Per Kelas (L/P)</h2>
+      </div>
+
+      <div id="loading">
+        <div class="spinner"></div>
+        Menghubungkan & Memuat Data Spreadsheet...
+      </div>
       
       <div class="table-responsive" id="data-container" style="display: none;">
         <table id="santriTable">
-          <thead>
-            <!-- Header tabel dinamis -->
-          </thead>
-          <tbody>
-            <!-- Data baris dinamis -->
-          </tbody>
+          <thead></thead>
+          <tbody></tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- FOOTER RUNNING TEXT -->
+  <!-- FOOTER -->
   <footer>
     <marquee behavior="scroll" direction="left" scrollamount="6">
-      Forum Komunikasi Pendidikan Al-Qur'an (FKPQ) Kecamatan Cikampek - Sekretariat : Kp. Pawarengan Desa Dawuan Tengah Kec. Cikampek - Karawang
+      <span>&#9670;</span> Forum Komunikasi Pendidikan Al-Qur'an (FKPQ) Kecamatan Cikampek <span>&#9670;</span> Sekretariat : Kp. Pawarengan Desa Dawuan Tengah Kec. Cikampek - Karawang
     </marquee>
   </footer>
 
-  <!-- SCRIPT INTEGRASI GOOGLE SHEET CSV -->
+  <!-- SCRIPT SPREADSHEET CSV -->
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
 
@@ -216,11 +300,10 @@
         document.getElementById('data-container').style.display = 'block';
       } catch (error) {
         console.error('Gagal mengambil data:', error);
-        document.getElementById('loading').innerText = 'Gagal memuat data. Pastikan jaringan terhubung dan publikasi Google Sheet aktif.';
+        document.getElementById('loading').innerHTML = '<span style="color: #ff5555;">Gagal memuat data. Periksa jaringan atau publikasi Google Sheet.</span>';
       }
     }
 
-    // Parser CSV untuk membaca format baris dan koma
     function parseCSV(text) {
       const lines = text.split('\n');
       return lines.map(line => {
@@ -236,7 +319,6 @@
       }).filter(row => row.length > 1 || row[0] !== '');
     }
 
-    // Render Data CSV ke Tabel HTML
     function renderTable(rows) {
       if (rows.length === 0) return;
 
@@ -246,7 +328,7 @@
       tableHead.innerHTML = '';
       tableBody.innerHTML = '';
 
-      // Set Header Tabel
+      // Header
       const headerRow = document.createElement('tr');
       rows[0].forEach(cellText => {
         const th = document.createElement('th');
@@ -255,11 +337,10 @@
       });
       tableHead.appendChild(headerRow);
 
-      // Set Baris Data
+      // Data Rows
       for (let i = 1; i < rows.length; i++) {
         const tr = document.createElement('tr');
         
-        // Cek baris 'Total' untuk highlight khusus
         if (rows[i][0] && rows[i][0].toLowerCase().includes('total')) {
           tr.classList.add('total-row');
         }
@@ -268,7 +349,6 @@
           const td = document.createElement('td');
           td.textContent = cellText;
           
-          // Kolom teks (misal Nama Lembaga) dibuat rata kiri
           if (index === 0 || index === 1) {
             td.classList.add('text-left');
           }
