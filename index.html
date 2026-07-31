@@ -82,44 +82,55 @@
       font-weight: 600;
     }
 
-    /* MAIN CONTAINER */
+    /* MAIN CONTAINER - LAYOUT SIDEBAR & TABEL */
     main {
       flex: 1;
-      padding: 25px 20px;
-      max-width: 1280px;
+      padding: 20px;
+      max-width: 1440px;
       margin: 0 auto;
       width: 100%;
     }
 
-    /* STATS GRID */
-    .stats-grid {
+    .dashboard-layout {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-      margin-bottom: 25px;
+      grid-template-columns: 280px 1fr; /* Kolom Kiri: Kartu Ringkasan, Kolom Kanan: Tabel */
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr; /* Responsif: Tumpuk vertical pada layar HP/Tablet */
+      }
+    }
+
+    /* STATS SIDEBAR */
+    .stats-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .stat-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 14px;
-      padding: 16px 18px;
+      padding: 14px 16px;
       backdrop-filter: blur(10px);
     }
 
-    .stat-card .label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 6px; }
-    .stat-card .value { font-size: 1.6rem; font-weight: 700; color: var(--accent-color); }
+    .stat-card .label { font-size: 0.72rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 4px; }
+    .stat-card .value { font-size: 1.4rem; font-weight: 700; color: var(--accent-color); }
     .stat-card.blue .value { color: var(--accent-blue); }
 
-    /* CARD STRUCTURE */
+    /* CARD STRUCTURE FOR TABLE */
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 25px;
+      padding: 20px;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      margin-bottom: 25px;
     }
 
     .card-header {
@@ -130,7 +141,7 @@
       gap: 15px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       padding-bottom: 15px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
 
     .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent-color); }
@@ -147,9 +158,9 @@
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
-      padding: 9px 14px;
+      padding: 8px 12px;
       color: #fff;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       outline: none;
       transition: 0.3s;
     }
@@ -183,15 +194,15 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: center; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; }
     th {
       background: rgba(0, 255, 163, 0.08);
       color: var(--accent-color);
-      padding: 14px 16px;
+      padding: 12px 14px;
       font-weight: 600;
       white-space: nowrap;
     }
-    td { padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #d1d5db; }
+    td { padding: 10px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #d1d5db; }
     tr:hover td { background: rgba(255, 255, 255, 0.03); }
     .text-left { text-align: left; }
     .total-row td { background: rgba(0, 255, 163, 0.06) !important; font-weight: 700; color: var(--accent-color) !important; }
@@ -202,12 +213,12 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      margin-top: 20px;
-      gap: 15px;
+      margin-top: 15px;
+      gap: 10px;
     }
 
     .pagination-info {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text-sub);
     }
 
@@ -219,9 +230,9 @@
     }
 
     .page-btn {
-      min-width: 35px;
-      height: 35px;
-      padding: 0 10px;
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -249,6 +260,8 @@
     @media print {
       body { background: #fff !important; color: #000 !important; }
       header, footer, .controls-group, .pagination-container { display: none !important; }
+      .dashboard-layout { display: block !important; }
+      .stats-sidebar { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; margin-bottom: 20px !important; }
       .glass-card { border: none !important; box-shadow: none !important; background: transparent !important; }
       th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #ccc !important; }
       td { color: #000 !important; border: 1px solid #ccc !important; }
@@ -275,66 +288,68 @@
 
   <!-- MAIN CONTENT -->
   <main>
-    <!-- KARTU RINGKASAN SANTRI & GURU -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="label">Total Lembaga</div>
-        <div class="value" id="stat-total-tpq">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Santri (L)</div>
-        <div class="value" id="stat-total-l">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Santri (P)</div>
-        <div class="value" id="stat-total-p">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Total Santri</div>
-        <div class="value" id="stat-total-santri">0</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="label">Guru (L)</div>
-        <div class="value" id="stat-guru-l">0</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="label">Guru (P)</div>
-        <div class="value" id="stat-guru-p">0</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="label">Total Guru</div>
-        <div class="value" id="stat-total-guru">0</div>
-      </div>
-    </div>
+    <div class="dashboard-layout">
+      <!-- KARTU RINGKASAN DI SAMPING KIRI -->
+      <aside class="stats-sidebar">
+        <div class="stat-card">
+          <div class="label">Total Lembaga</div>
+          <div class="value" id="stat-total-tpq">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Santri (L)</div>
+          <div class="value" id="stat-total-l">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Santri (P)</div>
+          <div class="value" id="stat-total-p">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Santri</div>
+          <div class="value" id="stat-total-santri">0</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Guru (L)</div>
+          <div class="value" id="stat-guru-l">0</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Guru (P)</div>
+          <div class="value" id="stat-guru-p">0</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Total Guru</div>
+          <div class="value" id="stat-total-guru">0</div>
+        </div>
+      </aside>
 
-    <!-- TABEL DATA, PENCARIAN & EXPORT -->
-    <div class="glass-card">
-      <div class="card-header">
-        <h2 class="card-title">Rincian Data Per Lembaga</h2>
+      <!-- TABEL DATA, PENCARIAN & EXPORT DI KANAN -->
+      <section class="glass-card">
+        <div class="card-header">
+          <h2 class="card-title">Rincian Data Per Lembaga</h2>
+          
+          <div class="controls-group">
+            <input type="text" id="searchInput" class="input-style" onkeyup="filterData()" placeholder="Cari nama TPQ / Desa...">
+            <button class="btn-style" onclick="window.print()">🖨️ Cetak / PDF</button>
+            <button class="btn-style" onclick="exportToCSV()">📥 Export Excel</button>
+          </div>
+        </div>
+
+        <div id="loading" style="text-align:center; padding: 30px;">Memuat Data dari Spreadsheet...</div>
         
-        <div class="controls-group">
-          <input type="text" id="searchInput" class="input-style" onkeyup="filterData()" placeholder="Cari nama TPQ / Desa...">
-          <button class="btn-style" onclick="window.print()">🖨️ Cetak / PDF</button>
-          <button class="btn-style" onclick="exportToCSV()">📥 Export Excel</button>
-        </div>
-      </div>
+        <div id="data-container" style="display: none;">
+          <div class="table-responsive">
+            <table id="santriTable">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
 
-      <div id="loading" style="text-align:center; padding: 30px;">Memuat Data dari Spreadsheet...</div>
-      
-      <div id="data-container" style="display: none;">
-        <div class="table-responsive">
-          <table id="santriTable">
-            <thead></thead>
-            <tbody></tbody>
-          </table>
+          <!-- PAGINASI CONTROLS -->
+          <div class="pagination-container">
+            <div class="pagination-info" id="paginationInfo">Menampilkan 0 - 0 dari 0 data</div>
+            <div class="pagination-buttons" id="paginationButtons"></div>
+          </div>
         </div>
-
-        <!-- PAGINASI CONTROLS -->
-        <div class="pagination-container">
-          <div class="pagination-info" id="paginationInfo">Menampilkan 0 - 0 dari 0 data</div>
-          <div class="pagination-buttons" id="paginationButtons"></div>
-        </div>
-      </div>
+      </section>
     </div>
   </main>
 
@@ -355,7 +370,7 @@
     let filteredDataRows = [];
     let totalRowData = null;
     let currentPage = 1;
-    const rowsPerPage = 5; // DIUBAH MENJADI 5 BARIS PER HALAMAN
+    const rowsPerPage = 5;
 
     async function fetchData() {
       try {
@@ -435,7 +450,7 @@
       const endIndex = Math.min(startIndex + rowsPerPage, totalItems);
       const pageData = filteredDataRows.slice(startIndex, endIndex);
 
-      // Render Baris Halaman Saat Ini (5 baris)
+      // Render Baris Halaman Saat Ini
       pageData.forEach(row => {
         const tr = document.createElement('tr');
         row.forEach((cellText, index) => {
