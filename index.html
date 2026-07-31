@@ -3,283 +3,444 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laporan Data Lembaga & Guru</title>
+  <title>Dashboard Santri & Guru FKPQ Cikampek</title>
   
-  <!-- SheetJS untuk Ekspor XLSX -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(18, 26, 43, 0.75);
+      --card-border: rgba(0, 255, 163, 0.15);
+      --accent-color: #00ffa3;
+      --accent-blue: #3b82f6;
+      --accent-glow: rgba(0, 255, 163, 0.35);
+      --text-main: #f0f6fc;
+      --text-sub: #8b949e;
+    }
+
     * {
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     body {
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f6f9;
-      color: #333;
+      background-color: var(--bg-color);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(0, 255, 163, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(13, 92, 58, 0.15) 0px, transparent 50%);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* CONTAINER PANEL STICKY (Lembaga, Pencarian, Tombol) */
-    .sticky-top-panel {
+    /* HEADER */
+    header {
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 15px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       position: sticky;
       top: 0;
-      background-color: #ffffff;
-      padding: 15px 20px;
       z-index: 100;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      border-radius: 8px 8px 0 0;
-      border-bottom: 2px solid #e5e7eb;
     }
 
-    .lembaga-info {
+    .logo-box {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-      gap: 10px;
     }
 
-    .lembaga-info h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      color: #1f2937;
+    .logo { height: 55px; width: auto; object-fit: contain; }
+
+    .header-title { text-align: center; }
+    .header-title h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
     }
 
-    .stat-badge {
-      background-color: #e0e7ff;
-      color: #3730a3;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: bold;
-      font-size: 0.9rem;
+    .header-title p {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      letter-spacing: 2px;
+      margin-top: 4px;
+      font-weight: 600;
     }
 
-    .action-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .search-box input {
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      width: 250px;
-      font-size: 0.9rem;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.875rem;
-      transition: background-color 0.2s;
-    }
-
-    .btn-pdf {
-      background-color: #dc2626;
-      color: white;
-    }
-    .btn-pdf:hover { background-color: #b91c1c; }
-
-    .btn-xlsx {
-      background-color: #16a34a;
-      color: white;
-    }
-    .btn-xlsx:hover { background-color: #15803d; }
-
-    /* TABEL & STICKY HEADER */
-    .table-container {
-      background: white;
-      border-radius: 0 0 8px 8px;
-      overflow-x: auto;
-    }
-
-    table {
+    /* MAIN CONTAINER */
+    main {
+      flex: 1;
+      padding: 25px 20px;
+      max-width: 1280px;
+      margin: 0 auto;
       width: 100%;
-      border-collapse: collapse;
-      text-align: left;
     }
 
-    /* Mengunci Header Tabel (Di bawah panel sticky top) */
-    thead th {
-      position: sticky;
-      /* Disesuaikan agar berada persis di bawah sticky-top-panel */
-      top: 108px; 
-      background-color: #f3f4f6;
-      color: #374151;
-      padding: 12px 16px;
-      font-size: 0.9rem;
-      border-bottom: 2px solid #e5e7eb;
-      z-index: 90;
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
     }
 
-    tbody td {
-      padding: 12px 16px;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 0.9rem;
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      backdrop-filter: blur(10px);
     }
 
-    tbody tr:hover {
-      background-color: #f9fafb;
+    .stat-card .label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 6px; }
+    .stat-card .value { font-size: 1.6rem; font-weight: 700; color: var(--accent-color); }
+    .stat-card.blue .value { color: var(--accent-blue); }
+
+    /* CARD STRUCTURE */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      margin-bottom: 25px;
     }
 
-    /* Pengaturan Cetak PDF / Print */
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent-color); }
+
+    /* CONTROLS */
+    .controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .input-style, .btn-style {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 9px 14px;
+      color: #fff;
+      font-size: 0.88rem;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .input-style:focus { border-color: var(--accent-color); }
+
+    .btn-style {
+      cursor: pointer;
+      background: rgba(0, 255, 163, 0.1);
+      color: var(--accent-color);
+      border-color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .btn-style:hover {
+      background: var(--accent-color);
+      color: #000;
+    }
+
+    /* TABLE */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: center; }
+    th {
+      background: rgba(0, 255, 163, 0.08);
+      color: var(--accent-color);
+      padding: 14px 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    td { padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: #d1d5db; }
+    tr:hover td { background: rgba(255, 255, 255, 0.03); }
+    .text-left { text-align: left; }
+    .total-row td { background: rgba(0, 255, 163, 0.06) !important; font-weight: 700; color: var(--accent-color) !important; }
+
+    /* FOOTER */
+    footer {
+      background: rgba(11, 15, 25, 0.95);
+      border-top: 1px solid var(--card-border);
+      padding: 12px 0;
+      margin-top: auto;
+    }
+
+    marquee { font-size: 0.88rem; color: #e2e8f0; }
+    marquee span { color: var(--accent-color); margin: 0 10px; }
+
+    /* PRINT STYLES */
     @media print {
-      body { padding: 0; background: white; }
-      .sticky-top-panel { position: static; box-shadow: none; border: none; }
-      .search-box, .btn-group { display: none; }
-      thead th { position: static; }
+      body { background: #fff !important; color: #000 !important; }
+      header, footer, .controls-group { display: none !important; }
+      .glass-card { border: none !important; box-shadow: none !important; background: transparent !important; }
+      th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #ccc !important; }
+      td { color: #000 !important; border: 1px solid #ccc !important; }
+      .total-row td { background: #e6e6e6 !important; color: #000 !important; }
+      .card-title { color: #000 !important; font-size: 1.5rem; text-align: center; }
     }
   </style>
 </head>
 <body>
 
-  <!-- BARIS STICKY: RINCIAN LEMBAGA, PENCARIAN, & TOMBOL AKSI -->
-  <div class="sticky-top-panel" id="topPanel">
-    <div class="lembaga-info">
-      <div>
-        <h2>Rincian Data Lembaga</h2>
-        <small style="color: #6b7280;">Kecamatan Cikampek - Tahun 2026</small>
+  <!-- HEADER -->
+  <header>
+    <div class="logo-box">
+      <img src="Logo Kemenag.png" alt="Logo Kemenag" class="logo">
+    </div>
+    <div class="header-title">
+      <h1>DATA REKAPITULASI SANTRI & GURU</h1>
+      <p>FKPQ KECAMATAN CIKAMPEK</p>
+    </div>
+    <div class="logo-box">
+      <img src="Logo FKPQ Cikampek.png" alt="Logo FKPQ Cikampek" class="logo">
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- KARTU RINGKASAN SANTRI & GURU -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="label">Total Lembaga</div>
+        <div class="value" id="stat-total-tpq">0</div>
       </div>
-      <!-- KODE JUMLAH GURU (Dihitung Dinamis via JS) -->
-      <div class="stat-badge">
-        Total Guru: <span id="totalGuruCount">0</span> Orang
+      <div class="stat-card">
+        <div class="label">Santri (L)</div>
+        <div class="value" id="stat-total-l">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Santri (P)</div>
+        <div class="value" id="stat-total-p">0</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="label">Guru (L)</div>
+        <div class="value" id="stat-guru-l">0</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="label">Guru (P)</div>
+        <div class="value" id="stat-guru-p">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Santri</div>
+        <div class="value" id="stat-total-santri">0</div>
       </div>
     </div>
 
-    <div class="action-bar">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Cari nama lembaga/NPSN..." onkeyup="filterTable()">
+    <!-- TABEL DATA, PENCARIAN & EXPORT -->
+    <div class="glass-card">
+      <div class="card-header">
+        <h2 class="card-title">Rincian Data Per Lembaga</h2>
+        
+        <div class="controls-group">
+          <input type="text" id="searchInput" class="input-style" onkeyup="filterData()" placeholder="Cari nama TPQ / Desa...">
+          <button class="btn-style" onclick="window.print()">🖨️ Cetak / PDF</button>
+          <button class="btn-style" onclick="exportToCSV()">📥 Export Excel</button>
+        </div>
       </div>
-      <div class="btn-group">
-        <button class="btn btn-pdf" onclick="cetakPDF()">Cetak PDF</button>
-        <button class="btn btn-xlsx" onclick="eksporXLSX()">Ekspor XLSX</button>
+
+      <div id="loading" style="text-align:center; padding: 30px;">Memuat Data dari Spreadsheet...</div>
+      
+      <div class="table-responsive" id="data-container" style="display: none;">
+        <table id="santriTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
-  </div>
+  </main>
 
-  <!-- TABEL DATA -->
-  <div class="table-container">
-    <table id="dataTable">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>NPSN</th>
-          <th>Nama Lembaga</th>
-          <th>Status</th>
-          <th>Jumlah Guru</th>
-          <th>Alamat</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>10801234</td>
-          <td>SD Negeri 01 Cikampek</td>
-          <td>Negeri</td>
-          <td class="jumlah-guru">18</td>
-          <td>Jl. Ahmad Yani No. 12</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>10801235</td>
-          <td>SD Negeri 02 Cikampek</td>
-          <td>Negeri</td>
-          <td class="jumlah-guru">14</td>
-          <td>Jl. Jend. Sudirman No. 45</td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>20805678</td>
-          <td>SMP Swasta Kartika</td>
-          <td>Swasta</td>
-          <td class="jumlah-guru">22</td>
-          <td>Jl. Pahlawan No. 8</td>
-        </tr>
-        <tr>
-          <td>4</td>
-          <td>20805679</td>
-          <td>SMA Harapan Bangsa</td>
-          <td>Swasta</td>
-          <td class="jumlah-guru">31</td>
-          <td>Jl. Pemuda No. 88</td>
-        </tr>
-        <tr>
-          <td>5</td>
-          <td>10801236</td>
-          <td>SD Negeri 03 Cikampek</td>
-          <td>Negeri</td>
-          <td class="jumlah-guru">12</td>
-          <td>Jl. Merdeka No. 3</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- FOOTER -->
+  <footer>
+    <marquee behavior="scroll" direction="left" scrollamount="6">
+      <span>&#9670;</span> Forum Komunikasi Pendidikan Al-Qur'an (FKPQ) Kecamatan Cikampek <span>&#9670;</span> Sekretariat : Kp. Pawarengan Desa Dawuan Tengah Kec. Cikampek - Karawang
+    </marquee>
+  </footer>
 
+  <!-- SCRIPT PROSES DATA -->
   <script>
-    // 1. HITUNG JUMLAH GURU SECARA DINAMIS
-    function hitungTotalGuru() {
-      const rows = document.querySelectorAll('#dataTable tbody tr');
-      let total = 0;
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
 
+    async function fetchData() {
+      try {
+        const response = await fetch(csvUrl);
+        const data = await response.text();
+        const rows = parseCSV(data);
+
+        renderTable(rows);
+        processDataWithGuru(rows);
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('data-container').style.display = 'block';
+      } catch (error) {
+        console.error('Gagal mengambil data:', error);
+        document.getElementById('loading').innerHTML = '<span style="color:#ff5555">Gagal memuat data dari spreadsheet.</span>';
+      }
+    }
+
+    function parseCSV(text) {
+      const lines = text.split('\n');
+      return lines.map(line => {
+        const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*)/g;
+        const row = [];
+        let matches;
+        while ((matches = regex.exec(line)) !== null) {
+          if (matches[0].startsWith(',')) matches[1] = matches[1];
+          let val = matches[1] ? matches[1].replace(/^"|"$/g, '').trim() : '';
+          row.push(val);
+        }
+        return row;
+      }).filter(row => row.length > 1 || row[0] !== '');
+    }
+
+    function renderTable(rows) {
+      if (rows.length === 0) return;
+      const tableHead = document.querySelector('#santriTable thead');
+      const tableBody = document.querySelector('#santriTable tbody');
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      const headerRow = document.createElement('tr');
+      rows[0].forEach(cellText => {
+        const th = document.createElement('th');
+        th.textContent = cellText;
+        headerRow.appendChild(th);
+      });
+      tableHead.appendChild(headerRow);
+
+      for (let i = 1; i < rows.length; i++) {
+        const tr = document.createElement('tr');
+        const isTotalRow = rows[i].some(cell => cell.toLowerCase().includes('total') || cell.toLowerCase().includes('jumlah'));
+        if (isTotalRow) tr.classList.add('total-row');
+
+        rows[i].forEach((cellText, index) => {
+          const td = document.createElement('td');
+          td.textContent = cellText;
+          if (index === 0 || index === 1) td.classList.add('text-left');
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      }
+    }
+
+    // PROSES PEMBACAAN DATA SANTRI & GURU DARI SPREADSHEET
+    function processDataWithGuru(rows) {
+      if (rows.length < 2) return;
+
+      const headers = rows[0];
+      let colSantriL = -1;
+      let colSantriP = -1;
+      let colGuruL = -1;
+      let colGuruP = -1;
+
+      // Cari otomatis indeks kolom Santri dan Guru dari Header CSV
+      headers.forEach((h, idx) => {
+        const text = h.toLowerCase();
+        if (text.includes('guru')) {
+          if (text.includes('l') || text.includes('pria') || text.includes('laki')) colGuruL = idx;
+          if (text.includes('p') || text.includes('wanita') || text.includes('perempuan')) colGuruP = idx;
+        } else if (text.includes('santri') || text.includes('siswa') || text.includes('murid')) {
+          if (text.includes('l') || text.includes('pria') || text.includes('laki')) colSantriL = idx;
+          if (text.includes('p') || text.includes('wanita') || text.includes('perempuan')) colSantriP = idx;
+        }
+      });
+
+      let totalSantriL = 0;
+      let totalSantriP = 0;
+      let totalGuruL = 0;
+      let totalGuruP = 0;
+      let totalLembaga = 0;
+
+      const isLastRowTotal = rows[rows.length - 1].some(c => c.toLowerCase().includes('total') || c.toLowerCase().includes('jumlah'));
+      const endIndex = rows.length - (isLastRowTotal ? 1 : 0);
+
+      for (let i = 1; i < endIndex; i++) {
+        const row = rows[i];
+        totalLembaga++;
+
+        if (colSantriL !== -1) totalSantriL += parseNum(row[colSantriL]);
+        if (colSantriP !== -1) totalSantriP += parseNum(row[colSantriP]);
+        if (colGuruL !== -1) totalGuruL += parseNum(row[colGuruL]);
+        if (colGuruP !== -1) totalGuruP += parseNum(row[colGuruP]);
+      }
+
+      // Tampilkan ke Kartu Ringkasan
+      document.getElementById('stat-total-tpq').innerText = totalLembaga.toLocaleString('id-ID');
+      document.getElementById('stat-total-l').innerText = totalSantriL.toLocaleString('id-ID');
+      document.getElementById('stat-total-p').innerText = totalSantriP.toLocaleString('id-ID');
+      document.getElementById('stat-guru-l').innerText = totalGuruL.toLocaleString('id-ID');
+      document.getElementById('stat-guru-p').innerText = totalGuruP.toLocaleString('id-ID');
+      document.getElementById('stat-total-santri').innerText = (totalSantriL + totalSantriP).toLocaleString('id-ID');
+    }
+
+    function parseNum(val) {
+      if (!val) return 0;
+      const num = parseInt(val.replace(/[^0-9]/g, ''));
+      return isNaN(num) ? 0 : num;
+    }
+
+    function filterData() {
+      const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+      const tr = document.querySelectorAll('#santriTable tbody tr');
+
+      tr.forEach(row => {
+        if (row.classList.contains('total-row')) return;
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(searchFilter) ? '' : 'none';
+      });
+    }
+
+    function exportToCSV() {
+      let csv = [];
+      const rows = document.querySelectorAll('#santriTable tr');
       rows.forEach(row => {
         if (row.style.display !== 'none') {
-          const guruCell = row.querySelector('.jumlah-guru');
-          if (guruCell) {
-            total += parseInt(guruCell.textContent || 0, 10);
-          }
+          const cols = row.querySelectorAll('td, th');
+          const rowData = Array.from(cols).map(c => `"${c.innerText}"`).join(',');
+          csv.push(rowData);
         }
       });
 
-      document.getElementById('totalGuruCount').textContent = total.toLocaleString('id-ID');
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'Data_FKPQ_Cikampek.csv');
+      a.click();
     }
 
-    // 2. FUNGSI PENCARIAN / FILTER
-    function filterTable() {
-      const input = document.getElementById('searchInput');
-      const filter = input.value.toLowerCase();
-      const rows = document.querySelectorAll('#dataTable tbody tr');
-
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        if (text.includes(filter)) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
-
-      // Perbarui hitungan total guru berdasarkan hasil pencarian
-      hitungTotalGuru();
-    }
-
-    // 3. EKSPOR KE XLSX (Menggunakan SheetJS)
-    function eksporXLSX() {
-      const table = document.getElementById('dataTable');
-      const wb = XLSX.utils.table_to_book(table, { sheet: "Rincian Lembaga" });
-      XLSX.writeFile(wb, "Data_Rincian_Lembaga.xlsx");
-    }
-
-    // 4. CETAK PDF / PRINT
-    function cetakPDF() {
-      window.print();
-    }
-
-    // Hitung total guru saat pertama kali dimuat
-    document.addEventListener('DOMContentLoaded', hitungTotalGuru);
+    document.addEventListener('DOMContentLoaded', fetchData);
   </script>
 </body>
 </html>
