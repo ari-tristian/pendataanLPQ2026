@@ -3,224 +3,284 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Pendataan LPQ 2026</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PapaParse untuk membaca CSV dari Google Sheets -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Dashboard Data Santri FKPQ Cikampek</title>
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f7f6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header & Logo */
+    header {
+      background: linear-gradient(135deg, #0d5c3a, #138d55);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo {
+      height: 70px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .header-title {
+      text-align: center;
+      flex-grow: 1;
+      padding: 0 15px;
+    }
+
+    .header-title h1 {
+      font-size: 1.4rem;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header-title p {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    /* Container Main */
+    main {
+      flex: 1;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      color: #0d5c3a;
+      border-bottom: 2px solid #138d55;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #138d55;
+      color: white;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .text-left {
+      text-align: left;
+    }
+
+    .total-row {
+      background-color: #e8f5e9 !important;
+      font-weight: bold;
+      color: #0d5c3a;
+    }
+
+    /* Loading State */
+    #loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 1.1rem;
+      color: #666;
+    }
+
+    /* Footer Running Text */
+    footer {
+      background-color: #111;
+      color: #fff;
+      padding: 10px 0;
+      position: sticky;
+      bottom: 0;
+      width: 100%;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+    }
+
+    marquee {
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: #ffeb3b;
+    }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen p-4 md:p-8">
+<body>
 
-  <div class="max-w-7xl mx-auto space-y-6">
-    
-    <!-- Header -->
-    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900">Dashboard Pendataan LPQ 2026</h1>
-        <p class="text-sm text-slate-500 mt-1">Forum Komunikasi Pendidikan Al-Qur'an Kecamatan Cikampek</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button onclick="loadDataFromSheets()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          Refresh Data
-        </button>
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live Sync
-        </div>
-      </div>
-    </header>
-
-    <!-- Kartu Statistik -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total LPQ</p>
-        <p class="text-2xl font-bold text-slate-800 mt-1" id="stat-total-lpq">0</p>
-      </div>
-      <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Santri</p>
-        <p class="text-2xl font-bold text-emerald-600 mt-1" id="stat-total-santri">0</p>
-        <p class="text-xs text-slate-400 mt-1" id="stat-detail-santri">0 L / 0 P</p>
-      </div>
-      <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Guru</p>
-        <p class="text-2xl font-bold text-indigo-600 mt-1" id="stat-total-guru">0</p>
-        <p class="text-xs text-slate-400 mt-1" id="stat-detail-guru">0 L / 0 P</p>
-      </div>
-      <div class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
-        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Batas Waktu</p>
-        <p class="text-lg font-bold text-amber-600 mt-1">01 Agustus 2026</p>
-      </div>
+  <!-- HEADER DENGAN LOGO KEMENAG & FKPQ -->
+  <header>
+    <div class="logo-container">
+      <!-- Logo Kemenag -->
+      <img src="Logo Kemenag.png" alt="Logo Kemenag" class="logo">
     </div>
 
-    <!-- Filter & Pencarian -->
-    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
-      <div class="relative w-full md:w-80">
-        <input type="text" id="search-input" placeholder="Cari nama LPQ, Kepala, atau NSPQ..." 
-          class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
-        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-      </div>
+    <div class="header-title">
+      <h1>DATA REKAPITULASI SANTRI</h1>
+      <p>FKPQ KECAMATAN CIKAMPEK</p>
+    </div>
+
+    <div class="logo-container">
+      <!-- Logo FKPQ Cikampek -->
+      <img src="Logo FKPQ Cikampek.jpg" alt="Logo FKPQ Cikampek" class="logo">
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div class="card">
+      <h2 class="card-title">Data Rincian Santri Per Kelas (L/P)</h2>
+      <div id="loading">Memuat data dari Google Sheet...</div>
       
-      <div class="flex items-center gap-2 w-full md:w-auto">
-        <label for="filter-jenis" class="text-xs font-semibold text-slate-500 whitespace-nowrap">Jenis LPQ:</label>
-        <select id="filter-jenis" class="w-full md:w-auto border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          <option value="ALL">Semua Jenis</option>
-          <option value="TKQ">TKQ</option>
-          <option value="TPQ">TPQ</option>
-          <option value="PAUDQ">PAUDQ</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Tabel Data -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-xs md:text-sm">
+      <div class="table-responsive" id="data-container" style="display: none;">
+        <table id="santriTable">
           <thead>
-            <tr class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
-              <th class="p-4 text-center">No</th>
-              <th class="p-4">NSPQ</th>
-              <th class="p-4">Nama LPQ</th>
-              <th class="p-4 text-center">Jenis</th>
-              <th class="p-4">Alamat</th>
-              <th class="p-4">Kepala Lembaga</th>
-              <th class="p-4 text-center">Santri (L/P)</th>
-              <th class="p-4 text-center">Total Santri</th>
-              <th class="p-4 text-center">Guru (L/P)</th>
-              <th class="p-4 text-center">Total Guru</th>
-            </tr>
+            <!-- Header tabel dinamis -->
           </thead>
-          <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
-            <tr>
-              <td colspan="10" class="p-6 text-center text-slate-400">Memuat data dari Google Sheets...</td>
-            </tr>
+          <tbody>
+            <!-- Data baris dinamis -->
           </tbody>
         </table>
       </div>
     </div>
+  </main>
 
-  </div>
+  <!-- FOOTER RUNNING TEXT -->
+  <footer>
+    <marquee behavior="scroll" direction="left" scrollamount="6">
+      Forum Komunikasi Pendidikan Al-Qur'an (FKPQ) Kecamatan Cikampek - Sekretariat : Kp. Pawarengan Desa Dawuan Tengah Kec. Cikampek - Karawang
+    </marquee>
+  </footer>
 
+  <!-- SCRIPT INTEGRASI GOOGLE SHEET CSV -->
   <script>
-    // MASUKKAN LINK CSV GOOGLE SHEETS ANDA DI SINI
-    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
 
-    let dataLPQ = [];
+    async function fetchData() {
+      try {
+        const response = await fetch(csvUrl);
+        const data = await response.text();
+        
+        const rows = parseCSV(data);
+        renderTable(rows);
 
-    // Mengambil data CSV dari Google Sheets
-    function loadDataFromSheets() {
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400">Memuat data terbaru...</td></tr>`;
-
-      if (SHEET_CSV_URL === 'PASTE_LINK_CSV_GOOGLE_SHEETS_DI_SINI' || !SHEET_CSV_URL) {
-        tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-red-500 font-medium">Silakan masukkan link CSV Google Sheets pada kode HTML terlebih dahulu.</td></tr>`;
-        return;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('data-container').style.display = 'block';
+      } catch (error) {
+        console.error('Gagal mengambil data:', error);
+        document.getElementById('loading').innerText = 'Gagal memuat data. Pastikan jaringan terhubung dan publikasi Google Sheet aktif.';
       }
+    }
 
-      Papa.parse(SHEET_CSV_URL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-          // Filter out baris TOTAL jika ada di Sheet
-          dataLPQ = results.data.filter(row => row['NSPQ'] && row['NSPQ'].trim() !== '' && row['No'] !== 'TOTAL');
-          renderApp();
-        },
-        error: function(err) {
-          tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-red-500">Gagal mengambil data dari Google Sheets.</td></tr>`;
+    // Parser CSV untuk membaca format baris dan koma
+    function parseCSV(text) {
+      const lines = text.split('\n');
+      return lines.map(line => {
+        const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*)/g;
+        const row = [];
+        let matches;
+        while ((matches = regex.exec(line)) !== null) {
+          if (matches[0].startsWith(',')) matches[1] = matches[1];
+          let val = matches[1] ? matches[1].replace(/^"|"$/g, '').trim() : '';
+          row.push(val);
         }
-      });
+        return row;
+      }).filter(row => row.length > 1 || row[0] !== '');
     }
 
-    function getBadgeJenis(jenis) {
-      const colors = {
-        'TKQ': 'bg-blue-50 text-blue-700 border-blue-200',
-        'TPQ': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        'PAUDQ': 'bg-purple-50 text-purple-700 border-purple-200'
-      };
-      return `<span class="px-2 py-1 rounded-md text-xs font-semibold border ${colors[jenis] || 'bg-slate-100'}">${jenis || '-'}</span>`;
-    }
+    // Render Data CSV ke Tabel HTML
+    function renderTable(rows) {
+      if (rows.length === 0) return;
 
-    function renderApp() {
-      const searchVal = document.getElementById('search-input').value.toLowerCase();
-      const filterVal = document.getElementById('filter-jenis').value;
+      const tableHead = document.querySelector('#santriTable thead');
+      const tableBody = document.querySelector('#santriTable tbody');
 
-      const filteredData = dataLPQ.filter(item => {
-        const nama = (item['Nama LPQ'] || '').toLowerCase();
-        const kepala = (item['Kepala Lembaga'] || '').toLowerCase();
-        const nspq = (item['NSPQ'] || '');
-        const jenis = (item['Jenis LPQ'] || '');
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
 
-        const matchSearch = nama.includes(searchVal) || kepala.includes(searchVal) || nspq.includes(searchVal);
-        const matchJenis = filterVal === 'ALL' || jenis === filterVal;
-        return matchSearch && matchJenis;
+      // Set Header Tabel
+      const headerRow = document.createElement('tr');
+      rows[0].forEach(cellText => {
+        const th = document.createElement('th');
+        th.textContent = cellText;
+        headerRow.appendChild(th);
       });
+      tableHead.appendChild(headerRow);
 
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = '';
+      // Set Baris Data
+      for (let i = 1; i < rows.length; i++) {
+        const tr = document.createElement('tr');
+        
+        // Cek baris 'Total' untuk highlight khusus
+        if (rows[i][0] && rows[i][0].toLowerCase().includes('total')) {
+          tr.classList.add('total-row');
+        }
 
-      if (filteredData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-400">Data tidak ditemukan</td></tr>`;
-      } else {
-        filteredData.forEach((item, index) => {
-          const santriL = parseInt(item['Total Santri (L)']) || 0;
-          const santriP = parseInt(item['Total Santri (P)']) || 0;
-          const totalSantri = parseInt(item['Total Santri']) || (santriL + santriP);
-
-          const guruL = parseInt(item['Guru (L)']) || 0;
-          const guruP = parseInt(item['Guru (P)']) || 0;
-          const totalGuru = parseInt(item['Total Guru']) || (guruL + guruP);
-
-          tbody.innerHTML += `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="p-4 text-center font-medium text-slate-400">${index + 1}</td>
-              <td class="p-4 font-mono font-medium text-slate-600">${item['NSPQ'] || '-'}</td>
-              <td class="p-4 font-bold text-slate-800">${item['Nama LPQ'] || '-'}</td>
-              <td class="p-4 text-center">${getBadgeJenis(item['Jenis LPQ'])}</td>
-              <td class="p-4 text-slate-600 text-xs">
-                <div>${item['Jl/Kp/Dusun'] || '-'}</div>
-                <div class="text-slate-400">RT ${item['RT/RW'] || '-'} - ${item['Desa/Kelurahan'] || '-'}</div>
-              </td>
-              <td class="p-4 font-medium">${item['Kepala Lembaga'] || '-'}</td>
-              <td class="p-4 text-center text-slate-500">${santriL} L / ${santriP} P</td>
-              <td class="p-4 text-center font-bold text-emerald-600">${totalSantri}</td>
-              <td class="p-4 text-center text-slate-500">${guruL} L / ${guruP} P</td>
-              <td class="p-4 text-center font-bold text-indigo-600">${totalGuru}</td>
-            </tr>
-          `;
+        rows[i].forEach((cellText, index) => {
+          const td = document.createElement('td');
+          td.textContent = cellText;
+          
+          // Kolom teks (misal Nama Lembaga) dibuat rata kiri
+          if (index === 0 || index === 1) {
+            td.classList.add('text-left');
+          }
+          
+          tr.appendChild(td);
         });
+        tableBody.appendChild(tr);
       }
-
-      // Hitung Ringkasan Statistik
-      const totLPQ = filteredData.length;
-      let totSantriL = 0, totSantriP = 0, totGuruL = 0, totGuruP = 0;
-
-      filteredData.forEach(item => {
-        totSantriL += parseInt(item['Total Santri (L)']) || 0;
-        totSantriP += parseInt(item['Total Santri (P)']) || 0;
-        totGuruL += parseInt(item['Guru (L)']) || 0;
-        totGuruP += parseInt(item['Guru (P)']) || 0;
-      });
-
-      document.getElementById('stat-total-lpq').innerText = totLPQ;
-      document.getElementById('stat-total-santri').innerText = totSantriL + totSantriP;
-      document.getElementById('stat-detail-santri').innerText = `${totSantriL} L / ${totSantriP} P`;
-      document.getElementById('stat-total-guru').innerText = totGuruL + totGuruP;
-      document.getElementById('stat-detail-guru').innerText = `${totGuruL} L / ${totGuruP} P`;
     }
 
-    document.getElementById('search-input').addEventListener('input', renderApp);
-    document.getElementById('filter-jenis').addEventListener('change', renderApp);
-
-    // Jalankan pertama kali saat halaman dibuka
-    loadDataFromSheets();
+    document.addEventListener('DOMContentLoaded', fetchData);
   </script>
 </body>
 </html>
