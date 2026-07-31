@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Santri FKPQ Cikampek - Advanced UI</title>
+  <title>Dashboard Santri FKPQ Cikampek - Accurate Data UI</title>
   
   <!-- Google Fonts & Chart.js Library -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -142,7 +142,7 @@
 
     .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent-color); }
 
-    /* CONTROLS (SEARCH, FILTER, BUTTONS) */
+    /* CONTROLS */
     .controls-group {
       display: flex;
       flex-wrap: wrap;
@@ -212,7 +212,7 @@
     marquee { font-size: 0.88rem; color: #e2e8f0; }
     marquee span { color: var(--accent-color); margin: 0 10px; }
 
-    /* 🖨️ PRINT-FRIENDLY STYLES (MODE CETAK RAPI) */
+    /* PRINT STYLES */
     @media print {
       body { background: #fff !important; color: #000 !important; }
       header, footer, .controls-group, .charts-grid { display: none !important; }
@@ -242,7 +242,7 @@
 
   <!-- MAIN CONTENT -->
   <main>
-    <!-- RINGKASAN DATA -->
+    <!-- RINGKASAN DATA AKURAT -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Total Lembaga</div>
@@ -262,15 +262,15 @@
       </div>
     </div>
 
-    <!-- GRAFIK VISUALISASI DATA -->
+    <!-- GRAFIK VISUALISASI DATA AKURAT -->
     <div class="charts-grid">
       <div class="glass-card" style="margin-bottom:0;">
         <h3 class="card-title" style="margin-bottom:15px;">Perbandingan Santri L / P</h3>
         <canvas id="genderChart" height="200"></canvas>
       </div>
       <div class="glass-card" style="margin-bottom:0;">
-        <h3 class="card-title" style="margin-bottom:15px;">Estimasi Distribusi Per Desa</h3>
-        <canvas id="desaChart" height="200"></canvas>
+        <h3 class="card-title" style="margin-bottom:15px;">Top 5 Lembaga (Santri Terbanyak)</h3>
+        <canvas id="topLembagaChart" height="200"></canvas>
       </div>
     </div>
 
@@ -280,23 +280,8 @@
         <h2 class="card-title">Rincian Data Santri Per Kelas</h2>
         
         <div class="controls-group">
-          <!-- Filter Desa -->
-          <select id="desaFilter" class="input-style" onchange="filterData()">
-            <option value="">-- Semua Desa/Kelurahan --</option>
-            <option value="Dawuan Tengah">Dawuan Tengah</option>
-            <option value="Dawuan Timur">Dawuan Timur</option>
-            <option value="Dawuan Barat">Dawuan Barat</option>
-            <option value="Cikampek Kota">Cikampek Kota</option>
-            <option value="Cikampek Timur">Cikampek Timur</option>
-            <option value="Cikampek Barat">Cikampek Barat</option>
-            <option value="Cikampek Selatan">Cikampek Selatan</option>
-            <option value="Kamojing">Kamojing</option>
-            <option value="Kalihurip">Kalihurip</option>
-            <option value="Kutapandawa">Kutapandawa</option>
-          </select>
-
           <!-- Search Box -->
-          <input type="text" id="searchInput" class="input-style" onkeyup="filterData()" placeholder="Cari nama TPQ...">
+          <input type="text" id="searchInput" class="input-style" onkeyup="filterData()" placeholder="Cari nama TPQ / Desa...">
 
           <!-- Export/Print Buttons -->
           <button class="btn-style" onclick="window.print()">🖨️ Cetak / PDF</button>
@@ -322,20 +307,21 @@
     </marquee>
   </footer>
 
-  <!-- JAVASCRIPT & LOGIC -->
+  <!-- SCRIPT PROSES DATA PRESISI -->
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQFljRqs0rwUz_lqMQVXBM9iQfpeJ5A45SzPEiWMW06McOb3YyifaJAIQc5HxWhBuMo6Nw4wbpesqtE/pub?gid=1040801330&single=true&output=csv';
-    let globalRows = [];
+    
+    let genderChartInstance = null;
+    let topChartInstance = null;
 
     async function fetchData() {
       try {
         const response = await fetch(csvUrl);
         const data = await response.text();
-        globalRows = parseCSV(data);
-        
-        renderTable(globalRows);
-        calculateStats(globalRows);
-        renderCharts();
+        const rows = parseCSV(data);
+
+        renderTable(rows);
+        processAccurateData(rows);
 
         document.getElementById('loading').style.display = 'none';
         document.getElementById('data-container').style.display = 'block';
@@ -379,7 +365,8 @@
       // Body
       for (let i = 1; i < rows.length; i++) {
         const tr = document.createElement('tr');
-        if (rows[i][0] && rows[i][0].toLowerCase().includes('total')) tr.classList.add('total-row');
+        const isTotalRow = rows[i].some(cell => cell.toLowerCase().includes('total'));
+        if (isTotalRow) tr.classList.add('total-row');
 
         rows[i].forEach((cellText, index) => {
           const td = document.createElement('td');
@@ -391,30 +378,98 @@
       }
     }
 
-    function calculateStats(rows) {
-      const totalRow = rows.find(r => r[0] && r[0].toLowerCase().includes('total'));
-      const totalLembaga = rows.length - 2;
-      const totalAll = totalRow ? totalRow[totalRow.length - 1] : 0;
+    // LOGIKA PERHITUNGAN DATA PRESISI DARI SPREADSHEET
+    function processAccurateData(rows) {
+      if (rows.length < 2) return;
 
-      document.getElementById('stat-total-tpq').innerText = totalLembaga > 0 ? totalLembaga : 0;
-      document.getElementById('stat-total-all').innerText = totalAll || '-';
-      document.getElementById('stat-total-l').innerText = '50%';
-      document.getElementById('stat-total-p').innerText = '50%';
+      const headers = rows[0];
+      let colLIndices = [];
+      let colPIndices = [];
+      let colTotalIndex = -1;
+
+      // Temukan posisi kolom L, P, dan Total secara presisi dari Header
+      headers.forEach((h, idx) => {
+        const headerText = h.toUpperCase().trim();
+        if (headerText === 'L' || headerText.includes('(L)')) {
+          colLIndices.push(idx);
+        } else if (headerText === 'P' || headerText.includes('(P)')) {
+          colPIndices.push(idx);
+        } else if (headerText.includes('JUMLAH') || headerText.includes('TOTAL')) {
+          colTotalIndex = idx;
+        }
+      });
+
+      // Jika tidak menemukan header Total, pilih kolom paling akhir
+      if (colTotalIndex === -1) colTotalIndex = headers.length - 1;
+
+      let totalL = 0;
+      let totalP = 0;
+      let totalAll = 0;
+      let totalLembaga = 0;
+      let topLembaga = [];
+
+      // Iterasi Baris Data
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const isTotalRow = row.some(cell => cell.toLowerCase().includes('total'));
+
+        if (isTotalRow) {
+          // Ambil angka jika ada di baris total spreadsheet
+          if (colTotalIndex !== -1 && parseNum(row[colTotalIndex]) > 0) {
+            totalAll = parseNum(row[colTotalIndex]);
+          }
+          continue;
+        }
+
+        totalLembaga++;
+
+        // Hitung akumulasi Laki-Laki
+        let rowL = 0;
+        colLIndices.forEach(idx => rowL += parseNum(row[idx]));
+        totalL += rowL;
+
+        // Hitung akumulasi Perempuan
+        let rowP = 0;
+        colPIndices.forEach(idx => rowP += parseNum(row[idx]));
+        totalP += rowP;
+
+        // Total per lembaga
+        let rowTotal = parseNum(row[colTotalIndex]);
+        if (rowTotal === 0) rowTotal = rowL + rowP;
+
+        // Ambil nama lembaga (Kolom 1 atau 2)
+        const namaLembaga = row[1] || row[0] || `TPQ ${i}`;
+        topLembaga.push({ nama: namaLembaga, jumlah: rowTotal });
+      }
+
+      // Jika total keseluruhan tidak di-override baris total, hitung dari penjumlahan L + P
+      if (totalAll === 0) totalAll = totalL + totalP;
+
+      // Update Tampilan Ringkasan Kartu Stat
+      document.getElementById('stat-total-tpq').innerText = totalLembaga.toLocaleString('id-ID');
+      document.getElementById('stat-total-l').innerText = totalL.toLocaleString('id-ID');
+      document.getElementById('stat-total-p').innerText = totalP.toLocaleString('id-ID');
+      document.getElementById('stat-total-all').innerText = totalAll.toLocaleString('id-ID');
+
+      // Update Grafik
+      renderCharts(totalL, totalP, topLembaga);
     }
 
-    // MULTI FILTER (DESA + LIVE SEARCH)
+    function parseNum(val) {
+      if (!val) return 0;
+      const num = parseInt(val.replace(/[^0-9]/g, ''));
+      return isNaN(num) ? 0 : num;
+    }
+
+    // FILTER LIVE SEARCH
     function filterData() {
       const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-      const desaFilter = document.getElementById('desaFilter').value.toLowerCase();
       const tr = document.querySelectorAll('#santriTable tbody tr');
 
       tr.forEach(row => {
         if (row.classList.contains('total-row')) return;
         const text = row.innerText.toLowerCase();
-        const matchesSearch = text.includes(searchFilter);
-        const matchesDesa = desaFilter === '' || text.includes(desaFilter);
-
-        row.style.display = (matchesSearch && matchesDesa) ? '' : 'none';
+        row.style.display = text.includes(searchFilter) ? '' : 'none';
       });
     }
 
@@ -438,29 +493,37 @@
       a.click();
     }
 
-    // RENDER GRAFIK CHART.JS
-    function renderCharts() {
-      // Grafik Donat Santri
-      new Chart(document.getElementById('genderChart'), {
+    // GRAFIK DATA DENGAN NILAI RIIL
+    function renderCharts(totalL, totalP, topLembaga) {
+      if (genderChartInstance) genderChartInstance.destroy();
+      if (topChartInstance) topChartInstance.destroy();
+
+      // Chart 1: Donat Santri L vs P
+      const ctx1 = document.getElementById('genderChart').getContext('2d');
+      genderChartInstance = new Chart(ctx1, {
         type: 'doughnut',
         data: {
           labels: ['Santri Laki-laki', 'Santri Perempuan'],
           datasets: [{
-            data: [50, 50],
+            data: [totalL, totalP],
             backgroundColor: ['#00ffa3', '#3b82f6']
           }]
         },
         options: { plugins: { legend: { labels: { color: '#fff' } } } }
       });
 
-      // Grafik Batang
-      new Chart(document.getElementById('desaChart'), {
+      // Chart 2: Top 5 Lembaga Terbanyak
+      topLembaga.sort((a, b) => b.jumlah - a.jumlah);
+      const top5 = topLembaga.slice(0, 5);
+
+      const ctx2 = document.getElementById('topLembagaChart').getContext('2d');
+      topChartInstance = new Chart(ctx2, {
         type: 'bar',
         data: {
-          labels: ['Dawuan Tgh', 'Cikampek Kta', 'Kamojing', 'Kalihurip', 'Dawuan Brt'],
+          labels: top5.map(item => item.nama.length > 15 ? item.nama.substr(0, 15) + '...' : item.nama),
           datasets: [{
-            label: 'Jumlah TPQ',
-            data: [12, 19, 8, 5, 10],
+            label: 'Jumlah Santri',
+            data: top5.map(item => item.jumlah),
             backgroundColor: 'rgba(0, 255, 163, 0.5)',
             borderColor: '#00ffa3',
             borderWidth: 1
